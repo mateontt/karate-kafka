@@ -1,6 +1,5 @@
-package com.inditex.finc.hosieser.karate;
+package com.kafkatest;
 
-import com.inditex.merlin.karate.ReportUtils;
 import com.intuit.karate.Results;
 import com.intuit.karate.Runner;
 import com.intuit.karate.cli.IdeMain;
@@ -35,11 +34,7 @@ public class KarateRunnerTest {
             .outputCucumberJson(true)
 
             .outputJunitXml(true)
-            // .parallel(options.getThreads());
             .parallel(1);
-
-        ReportUtils.prepareReports(results);
-        Assertions.assertEquals(0, results.getFailCount(), ReportUtils.createSummary(results));
 
     }
 

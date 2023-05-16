@@ -1,22 +1,27 @@
-Feature: Ejemplo de producción y consumo de mensajes en un servidor Kafka con Karate
+Feature: Kafka con Karate
 
-Background:
-	
-	
-	* def MiClase = Java.type('com.kafkatest.Producer')
-	* MiClase.createProducer()
-	* def Consumer = Java.type('com.kafkatest.Consumer')
-    * def consumer = new Consumer('test-topic')
+Background:	
+	# Instanciar Producer
+	* def MyProducer = Java.type('com.kafkatest.Producer')
+	* MyProducer.createProducer()
 
-@kafka3
-Scenario Outline: Producción y consumo de un mensaje en un servidor Kafka		
-	* def mensaje = MiClase.produce('message','<mensaje>')
+	# Instanciar Consumer
+	* def MyConsumer = Java.type('com.kafkatest.Consumer')
+    * def consumer = new MyConsumer('test-topic')
+
+@kafka
+Scenario Outline: Producción y consumo de un mensaje en un servidor Kafka	
+	# Producer
+	* def mensaje = MyProducer.produce('message','<mensaje>')
 	
+	# Consumer
     * def message = consumer.consume()
-    * print 'Last message: ', message
+    * print 'Mensaje recibido: ', message
 
+	# Validación
+	* match message == '<mensaje>'
 
 	Examples:
-	| mensaje  |
-	| communications es lo mejor |
-	# | inditex lo peta |
+	| mensaje     |
+	| Test MSG #1 |
+	| Test MSG #2 |

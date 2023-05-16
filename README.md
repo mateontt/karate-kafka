@@ -1,15 +1,17 @@
-<h1 align="center">Automatización Communications</h1>
+<h1 align="center">Karate & Kafka</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/-COMMUNICATIONS-blue" alt="COMMUNICATIONS">
+  <img src="https://img.shields.io/badge/-Kafka-blue" alt="Kafka">
   <img src="https://img.shields.io/badge/-Karate-green" alt="Karate">
 <p>
 
 <p align="center">
   <a href="#descripción">Descripción</a> •
   <a href="#estructura">Estructura</a> •
+  <a href="#entorno">Entorno</a> •
   <a href="#comandos">Comandos</a> •
-  <a href="#workflow">Workflow</a>
+  <a href="#ejemplo">Ejemplo de uso</a>
+  
 </p>
 
 <hr>
@@ -17,72 +19,99 @@
 <br>
 
 # Descripción
-Proyecto de automatización para los tests de Communications
+Automatización que produce y consume un mensaje de un servidor Kafka
 
 # Estructura
 La estructura de carpeta es similar a la de cualquier otro dominio dentro de este proyecto. Estas serían las rutas:
 
-* ```./code/DIGITALTIENDA/COMMBRANDS```: Raíz del proyecto para Communications. Desde aquí se lanzará el comando MVN en caso de lanzarla de forma manual
-* ```./github/workflows/utils```: Scripts de GitHub Workflows
-* ```./github/workflows/utils/communications```: Scripts python para las GitHub Action
-* ```./code/DIGITALTIENDA/COMMBRANDS/src/test/resources/test-cases```: Ruta donde se deben dejar los ficheros **.feature** con los tests para ser ejecutados
-* ```./code/DIGITALTIENDA/COMMBRANDS/target/karate-reports```: Ruta donde se guardará el reporte que haya generado Karate para la última ejecución
+* ```./python```: Scripts de Python para producir y consumir mensajes de Kafka. No se usan en la automatización
+* ```./docker```: Carpeta donde se ubica el fichero ```docker-composer.yml``` necesario para levantar el entorno de prueba
+* ```./src/test/resources/test-cases```: Ruta donde se deben dejar los ficheros ```.feature``` con los tests para ser ejecutados
+* ```./target/karate-reports```: Ruta donde se guardará el reporte que haya generado Karate para la última ejecución
+* ```.src/test/java/com/kafkatest```: Ruta donde se encuentran las clases Java para el Producer y Consumer utilizado en la automatización
+
+# Entorno
+El entorno usado estará basado en Docker para facilitar la ejecución local en cualquier máquina.
+
+Será necesario tener instalado <a href="https://docker.io">Docker</a> o <a href="https://rancherdesktop.io/">Rancher</a> para poder levantar el entorno de prueba.
+Todo el entorno se se levanta con el siguiente comando ejecutado dentro de la carpeta ```./docker``` que es donde se encuentra el fichero ```docker-compose.yml```:
+```
+docker-compose up -d
+```
+
+Esto descargará las imágenes y creará los contenedores que contienen el servidor kafka y zookeeper
+<img src="./images/docker-compose.png" alt="docker-compose console out">
+
+Si ejecutamos el comando ```docker ps -a``` se verá que los contenedores están creados y activos, también se verán los puertos expuestos que en este caso es el ```29092```
+<img src="./images/contenedores.png" alt="kafka containers">
 
 
 # Comandos
 > **Info**
 > Los comandos MVN se tiene que ejecutar desde la carpeta donde se encuentre el fichero pom.xml
-> Los scripts de Python se tiene que ejecutar desde la carpeta donde se encuentren. Algunos scripts tienen una versión **_local** para que puedan ser lanzados desde la propia máquina y así poder realizar pruebas en local.
+> Los scripts de Python se tiene que ejecutar desde la carpeta donde se encuentren.
 > Ver <a href="#estructura">Estructura</a>
 
 ## Ejecutar automatización
 <img src="https://img.shields.io/badge/Comando-Maven-orange" alt="Maven">
 
 Este sería el comando MVN para lanzar la automatización de forma manual:
-```mvn clean test "-Dkarate.options=--tags @MECCTMPLCO" "-Dkarate.env=pre" "-Dtest.tenant=pb" "-Dtest.authmode=basic" "-Dkarate.username=username" "-Dkarate.password=password" "-Dtest.janus=false"  -Dtest=KarateRunnerTest```
+```mvn clean test "-Dkarate.options=--tags @kafka" -Dtest=KarateRunnerTest```
 
 Parámetros:
-* ```-Dkarate.options=--tags @MECCTMPLCO```: Opcional. Especifíca que tags se deben ejecutar. Si se pone el símbolo ```~``` por delante del tag omitirá los tests que la contengan.
-* ```-Dkarate.env=pre```: Especifica el entorno donde se lanzará la automatización (pre, preint...)
-* ```-Dtest.tenant=pb```: Especifica el tenant (pb, bk ...)
-* ```-Dkarate.username=username```: Usuario que se usará para los tests
-* ```-Dkarate.password=password```: Contraseña
-* ```-Dtest.janus=false```: Determinados tests discriminan si se utiliza Janus para autenticarse o no, lo que implica utilizar URLs diferentes
+* ```-Dkarate.options=--tags @kafka```: Opcional. Especifíca que tags se deben ejecutar. Si se pone el símbolo ```~``` por delante del tag omitirá los tests que la contengan.
 
-## Importar los tests del testset indicado a carpeta local
+
+## Consumer de Kafka usando Python
 <img src="https://img.shields.io/badge/Comando-Python-red" alt="Python">
 
-Este script se conecta a JIRA y descarga los tests en la carpeta donde luego podrán ser ejecutados. Ver <a href="#estructura">Estructura</a>
-```py .\communications_test_import_local.py username password testplan```
+Script que al ejecutarse se queda leyendo de forma continuada el topic de Kafka y muestra los mensajes nuevos que van llegando.
+Dentro del script se puede configurar el servidor de Kafka y topic al que debe suscribirse
 
-Parámetros:
-* ```username```: Nombre de usuario de Inditex 
-* ```password```: Coontraseña de Inditex
-* ```testplan```: Id del testplan, por ejemplo COMMBRANDS-1836
+Comando para ejecutar el script: ```python .\consumer.py```
+
+Los mensajes que vayan llegando al topic se irán mostrando en la consola:
+<img src="./images/python_consumer.png" alt="Python consumer">
 
 
-## Ejecutar workflow remoto utilizando el calendario
+**Configuración del script:**
+* ```kafka_topic```: Topic al que se subscribirá para leer mensajes 
+* ```kafka_bootstrap_server```: Servidor(es) de Kafka
+* ```kafka_auto_offset_reset```: Punto desde el cual empezará a leer mensajes
+* ```kafka_enable_auto_commit```: Marcar automaticamente el mensaje como leido (dentro del group-id)
+* ```kafka_group_id```: Grupo al que pertenecerá
+
+
+## Producer de Kafka usando Python
 <img src="https://img.shields.io/badge/Comando-Python-red" alt="Python">
 
-Script que se ejecuta el workflow indicado utilizando la información del calendario
-* usuario - password - github_token - id workflow - id confluence del calendario
+Script que al ejecutarse produce un mensaje contra el topic de Kafka.
+Dentro del script se puede configurar el servidor de Kafka y topic al que debe enviar el mensaje
 
-```py .\communications_data_reader_local.py username password gh_token workflow calendar```
+Comando para ejecutar el script: ```python .\producer.py```
 
-Parámetros:
-* ```username```: Nombre de usuario de Inditex 
-* ```password```: Coontraseña de Inditex
-* ```gh_token```: Token de GitHub de un usuario con permisos sobre la automatización
-* ```workflow```: Id del workflow que se quiere ejecutar
-* ```calendar```: Id de la página del calendario en Confluence con la programación
+<img src="./images/python_producer.png" alt="Python producer">
 
 
-# Workflow
-<img src="https://img.shields.io/badge/GitHub-Action-blue" alt="Python">
+**Configuración del script:**
+* ```kafka_topic```: Topico al que se subscribirá para enviar mensajes 
+* ```kafka_bootstrap_server```: Servidor(es) de Kafka
+* ```kafka_key```: Key para los mensajes
+* ```kafka_value```: Mensaje que se enviará
 
-La automatización está preparada para lanzarse de forma automática usando una programación Cron. El workflow encargado de lanzar la automatización es **COMMBRANDS_TRIGGER**
 
-Una vez comprobado mediante Cron que se tiene que ejecutar, se ejecuta el script **communications_data_reader** pasándole las credenciales de Jira y el token de GitHub.
-El script se encarga de leer el calendario de ejecuciones semanal y comprobar si para ese día tiene ejecuciones programadas. En caso de tenerla se ejecutaría el workflow **COMMUNICATIONS_LAUNCHER** pasándole todos los parámetros necesarios.
 
-Éste se encarga de lanzar la automatización y de crear un Test Execution con todos los resultados y adjuntando el informe en formato ZIP
+# Ejemplo de uso
+<img src="https://img.shields.io/badge/Use-Sample-blue" alt="Ejemplo de uso">
+
+Un ejemplo de como utilizar la automatización es la de tener el consumer de Python arrancado y posteriormente lanzar la automatización para producir y leer los mensajes que se envíen
+
+1. Levantar entorno Docker
+2. Arrancar consumer Python 
+3. Desde otra consola, arrancar la automatización
+    3.1 En la consola donde se encuentre el consumer de Python tendrán que ir apareciendo los mensajes de la automatización
+    3.2 La automatización se ejecutará enviando y comprobando que los mensajes han llegado correctamente
+4. En el reporte se podrá comprobar el resultado de la prueba
+
+
+
