@@ -1,4 +1,0 @@
-urls:
-  kafka:
-    broker: localhost
-    port: 29092
