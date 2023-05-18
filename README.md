@@ -62,6 +62,25 @@ Parámetros:
 * ```-Dkarate.options=--tags @kafka```: Opcional. Especifíca que tags se deben ejecutar. Si se pone el símbolo ```~``` por delante del tag omitirá los tests que la contengan.
 
 
+## Producer de Kafka usando Python
+<img src="https://img.shields.io/badge/Comando-Python-red" alt="Python">
+
+Script que al ejecutarse produce un mensaje contra el topic de Kafka.
+Dentro del script se puede configurar el servidor de Kafka y topic al que debe enviar el mensaje
+
+Comando para ejecutar el script: ```python .\producer.py```
+
+<img src="./images/python_producer.png" alt="Python producer">
+
+
+**Configuración del script:**
+* ```kafka_topic```: Topico al que se subscribirá para enviar mensajes 
+* ```kafka_bootstrap_server```: Servidor(es) de Kafka
+* ```kafka_key```: Key para los mensajes
+* ```kafka_value```: Mensaje que se enviará
+
+También hay una variante del script que utiliza un esquema Avro para generar un mensaje. El esquema se encuentra en el fichero ```./python/esquema.avsc```
+
 ## Consumer de Kafka usando Python
 <img src="https://img.shields.io/badge/Comando-Python-red" alt="Python">
 
@@ -81,23 +100,7 @@ Los mensajes que vayan llegando al topic se irán mostrando en la consola:
 * ```kafka_enable_auto_commit```: Marcar automaticamente el mensaje como leido (dentro del group-id)
 * ```kafka_group_id```: Grupo al que pertenecerá
 
-
-## Producer de Kafka usando Python
-<img src="https://img.shields.io/badge/Comando-Python-red" alt="Python">
-
-Script que al ejecutarse produce un mensaje contra el topic de Kafka.
-Dentro del script se puede configurar el servidor de Kafka y topic al que debe enviar el mensaje
-
-Comando para ejecutar el script: ```python .\producer.py```
-
-<img src="./images/python_producer.png" alt="Python producer">
-
-
-**Configuración del script:**
-* ```kafka_topic```: Topico al que se subscribirá para enviar mensajes 
-* ```kafka_bootstrap_server```: Servidor(es) de Kafka
-* ```kafka_key```: Key para los mensajes
-* ```kafka_value```: Mensaje que se enviará
+También hay una variante del script que utiliza un esquema Avro para consumir un mensaje. El esquema se encuentra en el fichero ```./python/esquema.avsc```
 
 
 
@@ -115,3 +118,5 @@ Un ejemplo de como utilizar la automatización es la de tener el consumer de Pyt
 
 
 
+# Dependencias
+* pip install avro
